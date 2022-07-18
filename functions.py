@@ -1,3 +1,4 @@
+from click import option
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
@@ -50,12 +51,14 @@ def search(user="", search_term="", until="", since="", count=10):
 
 def get_tweets(count):
     temp = set()
+    c = 0
 
     while len(temp) < count:
+        c += 1
         tweets = driver.find_elements(
             "xpath", "//article[@data-testid='tweet']")
 
-        for tweet in tweets:
+        for tweet in tweets[-15:]:
             try:
                 temp_text = tweet.find_element(
                     "xpath", "div/div/div/div[2]/div[2]/div[2]/div[2]/div")
@@ -81,11 +84,20 @@ def get_tweets(count):
                         temp.add(text)
             except:
                 pass
-
+        
         pos = driver.execute_script("return window.pageYOffset;")
         page = driver.find_element("xpath", "//input")
         page.send_keys(Keys.PAGE_DOWN)
         time.sleep(0.1)
         new_pos = driver.execute_script("return window.pageYOffset;")
+
+        if new_pos > 0:
+            position_count = 0
+            while pos == new_pos:
+                position_count += 1
+                time.sleep(1)
+                if position_count == 10:
+                    count = len(temp)
+                    break
 
     return temp
