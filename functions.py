@@ -1,3 +1,4 @@
+from operator import le
 from click import option
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -44,7 +45,7 @@ def search(user="", search_term="", until="", since="", count=10):
         (By.LINK_TEXT, "Latest"))).click()
 
     data = list(get_tweets(count))
-    return data
+    return data[:count]
 
 
 # __________________ Read Tweets  ___________________
@@ -85,12 +86,15 @@ def get_tweets(count):
             except:
                 pass
         
+        if c%100 == 0:
+            print(len(temp))
         pos = driver.execute_script("return window.pageYOffset;")
         page = driver.find_element("xpath", "//input")
         page.send_keys(Keys.PAGE_DOWN)
         time.sleep(0.1)
         new_pos = driver.execute_script("return window.pageYOffset;")
 
+        
         if new_pos > 0:
             position_count = 0
             while pos == new_pos:
@@ -99,5 +103,6 @@ def get_tweets(count):
                 if position_count == 10:
                     count = len(temp)
                     break
+        
 
     return temp
